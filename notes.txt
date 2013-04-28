@@ -1,0 +1,23 @@
+Notes: OData tutorials
+
+http://www.asp.net/web-api/overview/odata-support-in-aspnet-web-api/getting-started-with-odata-in-web-api/create-a-read-only-odata-endpoint
+
+
+Multiple projects are in one solution here. To run the service and the client separately, right click the service, go to debug, and start new instance. Do the same for the client.
+----
+
+WebAPI template automatically has OData package, but if not, can add with package manager.
+
+"The EntitySetController class derives from ODataController, which itself derives from ApiController.
+
+Although you can create an OData endpoint using the ODataController class directly, EntitySetController handles the details of creating the correct OData-compliant HTTP response. This lets you focus on the code that is specific to your application. The EntitySetController class takes two generic type parameters: The first is the type for the entity (Product) and the second is the type for the entity key (int)."
+
+Note that the ProductsController class inherits EntitySetController instead of ApiController.
+
+webapiconfig.cs is modified to create and entity data model and configure the OData endpoint to use said model. ODataModelBuilder can be used to further customize the EDM.
+
+An endpoint can have multiple data sets. Call EntitySet<T> for each one.
+
+A site can have multiple OData endpoints. Use MapODataRoute to config each one's route and URI.
+
+URI works slightly differently. Rather than uri/Products/id, it's uri/Products(id)
