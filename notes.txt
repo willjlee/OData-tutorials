@@ -4,6 +4,8 @@ http://www.asp.net/web-api/overview/odata-support-in-aspnet-web-api/getting-star
 
 http://www.asp.net/web-api/overview/odata-support-in-aspnet-web-api/supporting-odata-crud-operations
 
+http://www.asp.net/web-api/overview/odata-support-in-aspnet-web-api/working-with-entity-relations
+
 
 Multiple projects are in one solution here. To run the service and the client separately, right click the service, go to debug, and start new instance. Do the same for the client.
 ----
@@ -26,4 +28,14 @@ URI works slightly differently. Rather than uri/Products/id, it's uri/Products(i
 
 ----
 
-CRUD operations are added by overriding the various methods in the controller. ProductsController, in this case. note that the PATCH handler takes a Delta<T> instance and calls Delta<T>Patch().
+CRUD operations are added by overriding the various methods in the controller. ProductsController, in this case. note that the PATCH handler takes a Delta<T> instance and calls Delta<T>.Patch().
+
+----
+
+In Supplier class, a string is used as the key. Note the [Key] annotation.
+
+[FromOdataUri] is used in method parameters to get webAPI to use OData syntax rules when parsing.
+
+OData allows the client to add or delete relationships between entities.
+
+

@@ -28,6 +28,7 @@ namespace Odata
 
             ODataModelBuilder modelBuilder = new ODataConventionModelBuilder();
             modelBuilder.EntitySet<Product>("Products");
+            modelBuilder.EntitySet<Product>("Suppliers");
 
             Microsoft.Data.Edm.IEdmModel model = modelBuilder.GetEdmModel();
             config.Routes.MapODataRoute("ODataRoute", "odata", model);

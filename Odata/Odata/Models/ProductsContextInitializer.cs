@@ -21,6 +21,15 @@ namespace Odata.Models
             };
 
             products.ForEach(p => context.Products.Add(p));
+
+            var suppliers = new List<Supplier>()
+            {
+                new Supplier(){Name="sup1"},
+                new Supplier(){Name="sup2"},
+                new Supplier(){Name="sup3"},
+            };
+
+            suppliers.ForEach(s => context.Suppliers.Add(s));
         }
     }
 }

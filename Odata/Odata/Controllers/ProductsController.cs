@@ -1,4 +1,7 @@
-﻿using Odata.Models;
+﻿
+using Microsoft.Data.OData;
+using Microsoft.Data.OData.Query;
+using Odata.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +9,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.OData;
+using System.Web.Http.OData.Routing;
+using System.Web.Http.Routing;
 
 namespace Odata.Controllers
 {
@@ -75,6 +80,106 @@ namespace Odata.Controllers
                 throw new HttpResponseException(HttpStatusCode.NotFound);
             }
             _context.Products.Remove(product);
+            _context.SaveChanges();
+        }
+
+        // GET /Products(1)/Supplier
+        public Supplier GetSupplier([FromODataUri] int key)
+        {
+            Product product = _context.Products.FirstOrDefault(p => p.ID == key);
+            if (product == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+            return product.Supplier;
+        }
+
+        //create a link
+        public override void CreateLink([FromODataUri] int key, string navigationProperty,
+    [FromBody] Uri link)
+        {
+            Product product = _context.Products.FirstOrDefault(p => p.ID == key);
+            if (product == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+            switch (navigationProperty)
+            {
+                case "Supplier":
+                    string supplierKey = GetKeyFromLinkUri<string>(link);
+                    Supplier supplier = _context.Suppliers.
+                        SingleOrDefault(s => s.Key == supplierKey);
+                    if (supplier == null)
+                    {
+                        throw new HttpResponseException(HttpStatusCode.NotFound);
+                    }
+                    product.Supplier = supplier;
+                    _context.SaveChanges();
+                    break;
+
+                default:
+                    base.CreateLink(key, navigationProperty, link);
+                    break;
+            }
+        }
+
+        // Helper method to extract the key from an OData link URI.
+        private TKey GetKeyFromLinkUri<TKey>(Uri link)
+        {
+            TKey key = default(TKey);
+
+            // Get the route that was used for this request.
+            IHttpRoute route = Request.GetRouteData().Route;
+
+            // Create an equivalent self-hosted route. 
+            IHttpRoute newRoute = new HttpRoute(route.RouteTemplate,
+                new HttpRouteValueDictionary(route.Defaults),
+                new HttpRouteValueDictionary(route.Constraints),
+                new HttpRouteValueDictionary(route.DataTokens), route.Handler);
+
+            // Create a fake GET request for the link URI.
+            var tmpRequest = new HttpRequestMessage(HttpMethod.Get, link);
+
+            // Send this request through the routing process.
+            var routeData = newRoute.GetRouteData(
+                Request.GetConfiguration().VirtualPathRoot, tmpRequest);
+
+            // If the GET request matches the route, use the path segments to find the key.
+            if (routeData != null)
+            {
+                ODataPath path = tmpRequest.GetODataPath();
+                var segment = path.Segments.OfType<KeyValuePathSegment>().FirstOrDefault();
+                if (segment != null)
+                {
+                    // Convert the segment into the key type.
+                    key = (TKey)ODataUriUtils.ConvertFromUriLiteral(
+                        segment.Value, ODataVersion.V3);
+                }
+            }
+            return key;
+        }
+
+        //delete a link
+        public override void DeleteLink([FromODataUri] int key, string navigationProperty,
+    [FromBody] Uri link)
+        {
+            Product product = _context.Products.FirstOrDefault(p => p.ID == key);
+            if (product == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            switch (navigationProperty)
+            {
+                case "Supplier":
+                    product.Supplier = null;
+                    break;
+
+                default:
+                    base.DeleteLink(key, navigationProperty, link);
+                    break;
+
+            }
             _context.SaveChanges();
         }
     }
